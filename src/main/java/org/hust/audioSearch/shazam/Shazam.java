@@ -1,0 +1,126 @@
+package shazam;
+import db.Mongo;
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.UnsupportedAudioFileException;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import static shazam.Audio.downsample;
+import static shazam.FFT.lowPassFilter;
+import static shazam.Fingerprint.generateFingerprints;
+import static shazam.Spectrogram.extractPeak;
+import static shazam.Spectrogram.getSpectrogram;
+
+public class Shazam {
+    public static int matchAudio (File audioFile ) throws UnsupportedAudioFileException, IOException {
+        double[] preprocessedSignal = preprocessAudio(audioFile, 4, 5000.0);
+        double[][] spectrogram = getSpectrogram(preprocessedSignal, 1024, 512);
+        Peak[] spectrogramPeaks = extractPeak(spectrogram, 1);
+        Map<Integer, ArrayList<Couple>> audioFingerprints = generateFingerprints(spectrogramPeaks, 0);
+        Integer[] hashes = audioFingerprints.keySet().toArray(new Integer[0]);
+        Mongo mongo = new Mongo("mongodb://127.0.0.1:27017", "MusicStreamingPlatform");
+        Map<Integer, ArrayList<Couple>> matchingFingerprints = mongo.getMatchingCouples(hashes);
+        mongo.close();
+        return filter(matchingFingerprints, audioFingerprints);
+    }
+
+    public static int filter(Map<Integer, ArrayList<Couple>> matchedHashCoupleMap, Map<Integer, ArrayList<Couple>> recordHashCoupleMap) {
+        Map<Couple, Integer> coupleCount = new HashMap<>();
+        //Count couple occurrence
+        for (Map.Entry<Integer, ArrayList<Couple>> entry : matchedHashCoupleMap.entrySet()) {
+            for (Couple matchedCouple : entry.getValue()) {
+                coupleCount.compute(matchedCouple, (_, val) -> val == null ? 1 : val + 1);
+            }
+        }
+        //Delete couples which doesn't form target zone
+        coupleCount.entrySet().removeIf(entry -> entry.getValue() < 4);
+
+        //Count target zones
+        Map<Integer, Integer> targetZoneCount = new HashMap<>();
+        for (Map.Entry<Couple, Integer> entry : coupleCount.entrySet()) {
+            targetZoneCount.compute(entry.getKey().songId, (_, val) -> val == null ? 1 : val + 1);
+        }
+        int NumOfSongWithMostTargetZone = 4;
+
+        List<Integer> remainingSongIdList = new ArrayList<>();
+        List<Integer> coupleCountList = new ArrayList<>();
+
+        for (Map.Entry<Integer, Integer> entry : targetZoneCount.entrySet()) {
+            int songId = entry.getKey();
+            int count = entry.getValue();
+
+            // Add the new entry
+            remainingSongIdList.add(songId);
+            coupleCountList.add(count);
+
+            // If we now have more than 4, remove the one with the smallest count
+            if (coupleCountList.size() > NumOfSongWithMostTargetZone) {
+                int minIndex = 0;
+                for (int i = 1; i < coupleCountList.size(); i++) {
+                    if (coupleCountList.get(i) < coupleCountList.get(minIndex)) {
+                        minIndex = i;
+                    }
+                }
+                remainingSongIdList.remove(minIndex);
+                coupleCountList.remove(minIndex);
+            }
+        }
+        //Calculate time coherency scores
+        Map<Integer, ArrayList<Integer>> timeCoherency = new HashMap<>();
+        for (Map.Entry<Integer, ArrayList<Couple>> entry : recordHashCoupleMap.entrySet()) {
+            {
+                for (Couple recordCouple : entry.getValue()) {
+                    if (matchedHashCoupleMap.get(entry.getKey())==null) continue;
+                    for (Couple dbCouple : matchedHashCoupleMap.get(entry.getKey())) {
+                        if (!remainingSongIdList.contains(dbCouple.songId)) continue;
+                        timeCoherency.compute(dbCouple.songId, (_, val) -> {
+                            if (val == null) val = new ArrayList<>();
+                            val.add(recordCouple.time - dbCouple.time);
+                            return val;
+                        });
+
+                    }
+                }
+            }
+        }
+        int highestNumOfCoherenceTimeDelta=0;
+        Map<Integer, Integer> highestCoherenceTimeDelta = new HashMap<>();
+        for (Map.Entry<Integer, ArrayList<Integer>> entry : timeCoherency.entrySet()){
+            Map<Integer, Integer> timeDeltaCount = new HashMap<>();
+            int maxCount = 0;
+            for (Integer timeDelta : entry.getValue()){
+                timeDeltaCount.compute(timeDelta, (_, val) -> val == null ? 1 : val + 1);
+                int currentCount = timeDeltaCount.get(timeDelta);
+                if (currentCount>maxCount) maxCount = currentCount;
+            }
+            highestCoherenceTimeDelta.put(entry.getKey(), maxCount);
+            if (maxCount > highestNumOfCoherenceTimeDelta) highestNumOfCoherenceTimeDelta=maxCount;
+        }
+
+        int MatchedSongId = 0;
+        for (Map.Entry<Integer, Integer> entry : highestCoherenceTimeDelta.entrySet()){
+            if(highestNumOfCoherenceTimeDelta == entry.getValue()) MatchedSongId = entry.getKey();
+            System.out.println(String.format("Song %s: %s",entry.getKey(),entry.getValue() ));
+        }
+        return MatchedSongId;
+    }
+
+    public static void addAudio(File audioFile, int songId) throws UnsupportedAudioFileException, IOException {
+        double[] preprocessedSignal = preprocessAudio(audioFile, 4, 5000.0);
+        double[][] spectrogram = getSpectrogram(preprocessedSignal, 1024, 512);
+        Peak[] spectrogramPeaks = extractPeak(spectrogram, 1);
+        Map<Integer, ArrayList<Couple>> audioFingerprints = generateFingerprints(spectrogramPeaks, songId);
+        Mongo mongo = new Mongo("mongodb://127.0.0.1:27017", "MusicStreamingPlatform");
+        mongo.insertFingerprints(audioFingerprints);
+    }
+
+    public static double[] preprocessAudio(File audioFile, int downsampleRatio, double cutOffFreq ) throws UnsupportedAudioFileException, IOException {
+        AudioFormat format = Audio.getAudioFormat(audioFile);
+        double[] PCMSignals = Audio.extractPCM(audioFile, true);
+        double[] filteredSignals = lowPassFilter(PCMSignals, cutOffFreq, format.getSampleRate());
+        return downsample(filteredSignals, downsampleRatio);
+    }
+}
