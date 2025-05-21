@@ -1,15 +1,12 @@
-package org;
+package org.hust.audioSearch.org;
 
-import shazam.Shazam;
+import  org.hust.audioSearch.shazam.Shazam;
 
-import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.UnsupportedAudioFileException;
 import java.io.File;
 import java.io.IOException;
 
 import static org.Utils.getBaseName;
-import static shazam.Audio.convert;
-import static shazam.Shazam.addAudio;
 
 public class main {
     public static void main(String[] args) throws UnsupportedAudioFileException, IOException {

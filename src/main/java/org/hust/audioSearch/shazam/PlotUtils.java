@@ -1,4 +1,4 @@
-package shazam;
+package org.hust.audioSearch.shazam;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;

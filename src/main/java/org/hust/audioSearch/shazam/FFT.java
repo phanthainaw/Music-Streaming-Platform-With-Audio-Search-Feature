@@ -1,8 +1,4 @@
-package shazam;
-
-import org.jtransforms.fft.DoubleFFT_1D;
-import java.util.ArrayList;
-import java.util.Arrays;
+package org.hust.audioSearch.shazam;
 
 public class FFT {
     public static double[] createSincKernel(int length, double cutOffFreq) {
