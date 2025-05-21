@@ -8,11 +8,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import static org.hust.audioSearch.shazam.Audio.downsample;
 import static org.hust.audioSearch.shazam.FFT.lowPassFilter;
 import static org.hust.audioSearch.shazam.Fingerprint.generateFingerprints;
 import static org.hust.audioSearch.shazam.Spectrogram.extractPeak;
 import static org.hust.audioSearch.shazam.Spectrogram.getSpectrogram;
+
 
 public class Shazam {
     public static int matchAudio (File audioFile ) throws UnsupportedAudioFileException, IOException {

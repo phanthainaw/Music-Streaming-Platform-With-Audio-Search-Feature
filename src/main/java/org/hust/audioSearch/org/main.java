@@ -1,9 +1,11 @@
 package org.hust.audioSearch.org;
 
-import org.hust.audioSearch.shazam.Shazam;
+import  org.hust.audioSearch.shazam.Shazam;
+
 import javax.sound.sampled.UnsupportedAudioFileException;
 import java.io.File;
 import java.io.IOException;
+
 import static org.Utils.getBaseName;
 
 public class main {
