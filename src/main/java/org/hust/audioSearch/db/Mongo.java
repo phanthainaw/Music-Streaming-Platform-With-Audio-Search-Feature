@@ -52,7 +52,7 @@ public class Mongo {
                 ArrayList<Couple> couplesForAHash = new ArrayList<>();
                 ArrayList<Document> coupledocs = (ArrayList<Document>) matchdoc.get("Couples");
                 for (Document coupledoc : coupledocs){
-                    couplesForAHash.add(new Couple((int)coupledoc.get("Timestamp"), (int)coupledoc.get("SongId")));
+                    couplesForAHash.add(new Couple((Integer) coupledoc.get("Timestamp"), (int)coupledoc.get("SongId")));
                 }
                 matchedCouples.put(hash,couplesForAHash);
             }

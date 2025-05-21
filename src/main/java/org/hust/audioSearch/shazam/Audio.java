@@ -131,4 +131,15 @@ public class Audio {
             System.err.println("Conversion error.");
         }
     }
+
+    public static double getAudioDuration(File audioFile){
+        try (AudioInputStream audioStream = AudioSystem.getAudioInputStream(audioFile)) {
+            AudioFormat format = audioStream.getFormat();
+            long frames = audioStream.getFrameLength();
+            double durationInSeconds = (frames + 0.0) / format.getFrameRate();
+            return durationInSeconds;
+        } catch (UnsupportedAudioFileException | IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

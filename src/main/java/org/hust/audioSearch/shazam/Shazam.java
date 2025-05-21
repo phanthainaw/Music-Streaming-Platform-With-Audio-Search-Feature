@@ -1,5 +1,6 @@
 package org.hust.audioSearch.shazam;
 import org.hust.audioSearch.db.Mongo;
+
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.UnsupportedAudioFileException;
 import java.io.File;
@@ -9,18 +10,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.hust.audioSearch.shazam.Audio.downsample;
-import static org.hust.audioSearch.shazam.FFT.lowPassFilter;
+import static org.hust.audioSearch.shazam.Audio.*;
+import static org.hust.audioSearch.shazam.FFT.*;
 import static org.hust.audioSearch.shazam.Fingerprint.generateFingerprints;
-import static org.hust.audioSearch.shazam.Spectrogram.extractPeak;
-import static org.hust.audioSearch.shazam.Spectrogram.getSpectrogram;
-
+import static org.hust.audioSearch.shazam.Spectrogram.*;
 
 public class Shazam {
-    public static int matchAudio (File audioFile ) throws UnsupportedAudioFileException, IOException {
+    public static int matchAudio (File audioFile) throws UnsupportedAudioFileException, IOException {
         double[] preprocessedSignal = preprocessAudio(audioFile, 4, 5000.0);
-        double[][] spectrogram = getSpectrogram(preprocessedSignal, 1024, 512);
-        Peak[] spectrogramPeaks = extractPeak(spectrogram, 1);
+//        preprocessedSignal=highPassFilter(preprocessedSignal,100, 11025);
+        double[][] spectrogram = getSpectrogram(preprocessedSignal, 1024, 1024/2);
+        Peak[] spectrogramPeaks = extractPeak(spectrogram, 7, 1.7);
+        System.out.println(spectrogramPeaks.length);
         Map<Integer, ArrayList<Couple>> audioFingerprints = generateFingerprints(spectrogramPeaks, 0);
         Integer[] hashes = audioFingerprints.keySet().toArray(new Integer[0]);
         Mongo mongo = new Mongo("mongodb://127.0.0.1:27017", "MusicStreamingPlatform");
@@ -29,23 +30,41 @@ public class Shazam {
         return filter(matchingFingerprints, audioFingerprints);
     }
 
+    public static void addAudio(File audioFile, int songId) throws UnsupportedAudioFileException, IOException {
+        double[] preprocessedSignal = preprocessAudio(audioFile, 4, 5000.0);
+        double[][] spectrogram = getSpectrogram(preprocessedSignal, 1024, 1024/2);
+        Peak[] spectrogramPeaks = extractPeak(spectrogram, 7, 1.5);
+        Map<Integer, ArrayList<Couple>> audioFingerprints = generateFingerprints(spectrogramPeaks, songId);
+        Mongo mongo = new Mongo("mongodb://127.0.0.1:27017", "MusicStreamingPlatform");
+        mongo.insertFingerprints(audioFingerprints);
+    }
+
+    public static double[] preprocessAudio(File audioFile, int downsampleRatio, double cutOffFreq ) throws UnsupportedAudioFileException, IOException {
+        AudioFormat format = Audio.getAudioFormat(audioFile);
+        double[] PCMSignals = Audio.extractPCM(audioFile, true);
+        double[] filteredSignals = lowPassFilter(PCMSignals, cutOffFreq, format.getSampleRate());
+//        double[] filteredSignals = SincFilter(PCMSignals,cutOffFreq, format.getSampleRate());
+        return downsample(filteredSignals, downsampleRatio);
+    }
+
     public static int filter(Map<Integer, ArrayList<Couple>> matchedHashCoupleMap, Map<Integer, ArrayList<Couple>> recordHashCoupleMap) {
         Map<Couple, Integer> coupleCount = new HashMap<>();
-        //Count couple occurrence
+
         for (Map.Entry<Integer, ArrayList<Couple>> entry : matchedHashCoupleMap.entrySet()) {
             for (Couple matchedCouple : entry.getValue()) {
                 coupleCount.compute(matchedCouple, (key, val) -> val == null ? 1 : val + 1);
             }
         }
+
         //Delete couples which doesn't form target zone
-        coupleCount.entrySet().removeIf(entry -> entry.getValue() < 4);
+        coupleCount.entrySet().removeIf(entry -> entry.getValue() < 5);
 
         //Count target zones
         Map<Integer, Integer> targetZoneCount = new HashMap<>();
         for (Map.Entry<Couple, Integer> entry : coupleCount.entrySet()) {
             targetZoneCount.compute(entry.getKey().songId, (key, val) -> val == null ? 1 : val + 1);
         }
-        int NumOfSongWithMostTargetZone = 4;
+        int NumOfSongWithMostTargetZone = 10;
 
         List<Integer> remainingSongIdList = new ArrayList<>();
         List<Integer> coupleCountList = new ArrayList<>();
@@ -71,23 +90,26 @@ public class Shazam {
             }
         }
         //Calculate time coherency scores
+
+        final int MAX_TIME_OFFSETS = 2000;
+
         Map<Integer, ArrayList<Integer>> timeCoherency = new HashMap<>();
         for (Map.Entry<Integer, ArrayList<Couple>> entry : recordHashCoupleMap.entrySet()) {
-            {
                 for (Couple recordCouple : entry.getValue()) {
                     if (matchedHashCoupleMap.get(entry.getKey())==null) continue;
                     for (Couple dbCouple : matchedHashCoupleMap.get(entry.getKey())) {
                         if (!remainingSongIdList.contains(dbCouple.songId)) continue;
                         timeCoherency.compute(dbCouple.songId, (key, val) -> {
                             if (val == null) val = new ArrayList<>();
-                            val.add(recordCouple.time - dbCouple.time);
+                            if (val.size() < MAX_TIME_OFFSETS){
+                                val.add(recordCouple.time - dbCouple.time);}
                             return val;
                         });
 
                     }
                 }
-            }
         }
+
         int highestNumOfCoherenceTimeDelta=0;
         Map<Integer, Integer> highestCoherenceTimeDelta = new HashMap<>();
         for (Map.Entry<Integer, ArrayList<Integer>> entry : timeCoherency.entrySet()){
@@ -110,19 +132,5 @@ public class Shazam {
         return MatchedSongId;
     }
 
-    public static void addAudio(File audioFile, int songId) throws UnsupportedAudioFileException, IOException {
-        double[] preprocessedSignal = preprocessAudio(audioFile, 4, 5000.0);
-        double[][] spectrogram = getSpectrogram(preprocessedSignal, 1024, 512);
-        Peak[] spectrogramPeaks = extractPeak(spectrogram, 1);
-        Map<Integer, ArrayList<Couple>> audioFingerprints = generateFingerprints(spectrogramPeaks, songId);
-        Mongo mongo = new Mongo("mongodb://127.0.0.1:27017", "MusicStreamingPlatform");
-        mongo.insertFingerprints(audioFingerprints);
-    }
 
-    public static double[] preprocessAudio(File audioFile, int downsampleRatio, double cutOffFreq ) throws UnsupportedAudioFileException, IOException {
-        AudioFormat format = Audio.getAudioFormat(audioFile);
-        double[] PCMSignals = Audio.extractPCM(audioFile, true);
-        double[] filteredSignals = lowPassFilter(PCMSignals, cutOffFreq, format.getSampleRate());
-        return downsample(filteredSignals, downsampleRatio);
-    }
 }

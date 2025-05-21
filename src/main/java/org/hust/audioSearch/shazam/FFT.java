@@ -1,8 +1,9 @@
 package org.hust.audioSearch.shazam;
 
 import org.jtransforms.fft.DoubleFFT_1D;
-import java.util.ArrayList;
 import java.util.Arrays;
+
+import static org.hust.audioSearch.shazam.PlotUtils.plotDoubleArray;
 
 public class FFT {
     public static double[] createSincKernel(int length, double cutOffFreq) {
@@ -45,22 +46,48 @@ public class FFT {
         return magnitudeSpectrum;
     }
 
-    public static double[]lowPassFilter(double[] inputSignal, double cutOffFrequency, double sampleRate){
+    public static double[] lowPassFilter(double[] inputSignal, double cutOffFrequency, double sampleRate) {
         double rc = 1.0 / (2 * Math.PI * cutOffFrequency);
         double dt = 1.0 / sampleRate;
         double alpha = dt / (rc + dt);
-        double[] filteredSignal  = new double[inputSignal.length];
-        double prevOuput = 0;
-        for (int i = 0; i < inputSignal.length; i++) {
-            if (i == 0){
-                filteredSignal[i] = inputSignal[i]*alpha;
-            } else {
-                filteredSignal[i] = alpha*inputSignal[i] + (1 - alpha)*prevOuput;
-            }
-            prevOuput = filteredSignal[i];
+
+        double[] filteredSignal = new double[inputSignal.length];
+        filteredSignal[0] = inputSignal[0];  // Initialize first sample directly
+        for (int i = 1; i < inputSignal.length; i++) {
+            filteredSignal[i] = filteredSignal[i - 1] + alpha * (inputSignal[i] - filteredSignal[i - 1]);
         }
-        return  filteredSignal;
+        return filteredSignal;
     }
+
+    public static double[]SincFilter(double[] inputSignal, double cutOffFrequency, double sampleRate){
+        int lengthSignal = inputSignal.length;
+        System.out.println(lengthSignal);
+        DoubleFFT_1D fft = new DoubleFFT_1D(lengthSignal);
+        fft.realForward(inputSignal);
+        double[] sincKernel = createSincKernel(512, cutOffFrequency / sampleRate);
+        sincKernel = Arrays.copyOf(sincKernel, lengthSignal);
+        fft.realForward(sincKernel);
+        double[] filteredAudioFFT = multiplyComplexSpectra(inputSignal, sincKernel);
+        fft.realInverse(filteredAudioFFT, true);
+        System.gc();
+        return filteredAudioFFT;
+    }
+
+    public static double[] highPassFilter(double[] inputSignal, double cutOffFrequency, double sampleRate) {
+        double rc = 1.0 / (2 * Math.PI * cutOffFrequency);
+        double dt = 1.0 / sampleRate;
+        double alpha = rc / (rc + dt);
+
+        double[] filteredSignal = new double[inputSignal.length];
+        filteredSignal[0] = inputSignal[0];  // Initialize first sample
+
+        for (int i = 1; i < inputSignal.length; i++) {
+            filteredSignal[i] = alpha * (filteredSignal[i - 1] + inputSignal[i] - inputSignal[i - 1]);
+        }
+
+        return filteredSignal;
+    }
+
 }
 
 
