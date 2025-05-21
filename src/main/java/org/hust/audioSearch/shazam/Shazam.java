@@ -1,5 +1,5 @@
-package shazam;
-import db.Mongo;
+package org.hust.audioSearch.shazam;
+import org.hust.audioSearch.db.Mongo;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.UnsupportedAudioFileException;
 import java.io.File;
@@ -8,11 +8,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import static shazam.Audio.downsample;
-import static shazam.FFT.lowPassFilter;
-import static shazam.Fingerprint.generateFingerprints;
-import static shazam.Spectrogram.extractPeak;
-import static shazam.Spectrogram.getSpectrogram;
+import static org.hust.audioSearch.shazam.Audio.downsample;
+import static org.hust.audioSearch.shazam.FFT.lowPassFilter;
+import static org.hust.audioSearch.shazam.Fingerprint.generateFingerprints;
+import static org.hust.audioSearch.shazam.Spectrogram.extractPeak;
+import static org.hust.audioSearch.shazam.Spectrogram.getSpectrogram;
 
 public class Shazam {
     public static int matchAudio (File audioFile ) throws UnsupportedAudioFileException, IOException {
@@ -32,7 +32,7 @@ public class Shazam {
         //Count couple occurrence
         for (Map.Entry<Integer, ArrayList<Couple>> entry : matchedHashCoupleMap.entrySet()) {
             for (Couple matchedCouple : entry.getValue()) {
-                coupleCount.compute(matchedCouple, (_, val) -> val == null ? 1 : val + 1);
+                coupleCount.compute(matchedCouple, (key, val) -> val == null ? 1 : val + 1);
             }
         }
         //Delete couples which doesn't form target zone
@@ -41,7 +41,7 @@ public class Shazam {
         //Count target zones
         Map<Integer, Integer> targetZoneCount = new HashMap<>();
         for (Map.Entry<Couple, Integer> entry : coupleCount.entrySet()) {
-            targetZoneCount.compute(entry.getKey().songId, (_, val) -> val == null ? 1 : val + 1);
+            targetZoneCount.compute(entry.getKey().songId, (key, val) -> val == null ? 1 : val + 1);
         }
         int NumOfSongWithMostTargetZone = 4;
 
@@ -76,7 +76,7 @@ public class Shazam {
                     if (matchedHashCoupleMap.get(entry.getKey())==null) continue;
                     for (Couple dbCouple : matchedHashCoupleMap.get(entry.getKey())) {
                         if (!remainingSongIdList.contains(dbCouple.songId)) continue;
-                        timeCoherency.compute(dbCouple.songId, (_, val) -> {
+                        timeCoherency.compute(dbCouple.songId, (key, val) -> {
                             if (val == null) val = new ArrayList<>();
                             val.add(recordCouple.time - dbCouple.time);
                             return val;
@@ -92,7 +92,7 @@ public class Shazam {
             Map<Integer, Integer> timeDeltaCount = new HashMap<>();
             int maxCount = 0;
             for (Integer timeDelta : entry.getValue()){
-                timeDeltaCount.compute(timeDelta, (_, val) -> val == null ? 1 : val + 1);
+                timeDeltaCount.compute(timeDelta, (key, val) -> val == null ? 1 : val + 1);
                 int currentCount = timeDeltaCount.get(timeDelta);
                 if (currentCount>maxCount) maxCount = currentCount;
             }

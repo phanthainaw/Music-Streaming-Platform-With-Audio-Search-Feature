@@ -1,4 +1,4 @@
-package shazam;
+package org.hust.audioSearch.shazam;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;

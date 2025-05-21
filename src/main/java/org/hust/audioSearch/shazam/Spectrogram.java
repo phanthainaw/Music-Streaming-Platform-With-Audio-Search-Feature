@@ -1,11 +1,8 @@
-package shazam;
-
+package org.hust.audioSearch.shazam;
 import org.jtransforms.fft.DoubleFFT_1D;
-
 import java.util.ArrayList;
 import java.util.Arrays;
-
-import static shazam.FFT.getMagnitudeSpectrum;
+import static org.hust.audioSearch.shazam.FFT.getMagnitudeSpectrum;
 
 public class Spectrogram {
     public static double[][] getSpectrogram(double[] inputSignal, int windowSize, int hopSize) {

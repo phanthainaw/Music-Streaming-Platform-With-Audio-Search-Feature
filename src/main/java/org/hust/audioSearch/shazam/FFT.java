@@ -1,4 +1,4 @@
-package shazam;
+package org.hust.audioSearch.shazam;
 
 import org.jtransforms.fft.DoubleFFT_1D;
 import java.util.ArrayList;

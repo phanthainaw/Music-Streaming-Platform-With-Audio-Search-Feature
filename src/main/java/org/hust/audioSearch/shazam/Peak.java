@@ -1,4 +1,4 @@
-package shazam;
+package org.hust.audioSearch.shazam;
 
 public class Peak {
     public short frequency;

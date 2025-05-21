@@ -1,4 +1,4 @@
-package shazam;
+package org.hust.audioSearch.shazam;
 
 import javax.sound.sampled.*;
 import java.io.*;

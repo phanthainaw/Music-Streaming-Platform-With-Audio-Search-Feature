@@ -1,4 +1,4 @@
-package db;
+package org.hust.audioSearch.db;
 
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
@@ -9,8 +9,7 @@ import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.model.Updates;
 import com.mongodb.client.result.UpdateResult;
 import org.bson.Document;
-import org.bson.types.ObjectId;
-import shazam.Couple;
+import org.hust.audioSearch.shazam.Couple;
 
 import java.util.ArrayList;
 import java.util.HashMap;
