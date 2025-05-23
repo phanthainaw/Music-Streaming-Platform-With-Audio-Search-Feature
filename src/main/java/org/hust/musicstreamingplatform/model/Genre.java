@@ -4,6 +4,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import org.hust.musicstreamingplatform.model.enums.GenreEnum;
 
 @Entity
 public class Genre {
@@ -12,5 +13,5 @@ public class Genre {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    private String title;
+    private GenreEnum title;
 }
