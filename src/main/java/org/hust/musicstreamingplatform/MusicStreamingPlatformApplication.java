@@ -8,6 +8,7 @@ public class MusicStreamingPlatformApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(MusicStreamingPlatformApplication.class, args);
+
     }
 
 }

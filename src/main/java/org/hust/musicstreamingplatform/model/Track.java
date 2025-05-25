@@ -2,6 +2,7 @@ package org.hust.musicstreamingplatform.model;
 
 import jakarta.persistence.*;
 
+import java.util.Date;
 import java.util.List;
 
 @Entity
@@ -10,8 +11,11 @@ public class Track {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private  Integer id;
 
-    private String name;
+    private String title;
     private Float duration;
+    private Date releaseDate;
+    private String cdnUrl ;
+    private String coverUrl;
 
     @ManyToOne
     @JoinColumn(name = "album_id")
