@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/track")
+@RequestMapping("/tracks")
 public class TrackController {
     final private TrackDto sampleTrack = TrackDto.builder().id(1).name("Dáng Em").duration("1:20").build();
 

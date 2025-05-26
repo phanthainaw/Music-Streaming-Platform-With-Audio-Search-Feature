@@ -21,6 +21,10 @@ public class Album {
     @JoinColumn(name = "genre_id")
     private Genre genre;
 
+    @ManyToOne
+    @JoinColumn(name = "owner_id")
+    private User owner;
+
     @ManyToMany
     @JoinTable(
             name="album_artist",
