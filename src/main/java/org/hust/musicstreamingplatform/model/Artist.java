@@ -1,9 +1,11 @@
 package org.hust.musicstreamingplatform.model;
 
 import jakarta.persistence.*;
+import lombok.Data;
 import org.apache.catalina.Manager;
 
 @Entity
+@Data
 public class Artist {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -1,11 +1,13 @@
 package org.hust.musicstreamingplatform.model;
 
 import jakarta.persistence.*;
+import lombok.Data;
 
 import java.util.Date;
 import java.util.List;
 
 @Entity
+@Data
 public class Track {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

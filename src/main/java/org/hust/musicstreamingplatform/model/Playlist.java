@@ -1,10 +1,12 @@
 package org.hust.musicstreamingplatform.model;
 
 import jakarta.persistence.*;
+import lombok.Data;
 
 import java.util.List;
 
 @Entity
+@Data
 public class Playlist {
 
     @Id

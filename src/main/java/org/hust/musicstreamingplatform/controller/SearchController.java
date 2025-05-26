@@ -1,5 +1,9 @@
 package org.hust.musicstreamingplatform.controller;
 
+import org.hust.musicstreamingplatform.dto.search.SearchTracksResponse;
+import org.hust.musicstreamingplatform.dto.track.TrackDto;
+import org.hust.musicstreamingplatform.service.SearchService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -10,6 +14,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/search")
 
 public class SearchController {
+
+    @Autowired
+    private SearchService searchService;
+
     @RequestMapping("/")
     public ResponseEntity<String> searchAll (@RequestParam String q) {
 
@@ -23,9 +31,9 @@ public class SearchController {
     }
 
     @RequestMapping("/tracks")
-    public ResponseEntity<String> searchTracks (@RequestParam String q) {
+    public ResponseEntity<SearchTracksResponse> searchTracks (@RequestParam String q) {
 
-        return ResponseEntity.ok("");
+        return ResponseEntity.ok(searchService.searchTracks(q));
     }
 
     @RequestMapping("/artists")
