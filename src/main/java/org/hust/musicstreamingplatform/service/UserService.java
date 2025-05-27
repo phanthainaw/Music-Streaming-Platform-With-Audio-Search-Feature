@@ -2,6 +2,7 @@ package org.hust.musicstreamingplatform.service;
 
 import jakarta.transaction.Transactional;
 import org.hust.musicstreamingplatform.dto.user.UpdateUserInfoRequest;
+import org.hust.musicstreamingplatform.dto.user.UpdateUserRoleRequest;
 import org.hust.musicstreamingplatform.dto.user.UserDto;
 import org.hust.musicstreamingplatform.dto.user.UserRegistrationDto;
 import org.hust.musicstreamingplatform.exception.UserNotFoundException;
@@ -12,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -22,9 +24,27 @@ public class UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    public List<UserDto> getAllUser() {
+        List<User> users = userRepository.findAll();
+        return users.stream()
+                .map(user -> UserDto.builder()
+                        .id(user.getId())
+                        .name(user.getName())
+                        .email(user.getEmail())
+                        .role(user.getRole())
+                        .build())
+                .toList();
+    }
+
+
     public UserDto getUserById(int id) {
         User user = userRepository.findById(id).orElseThrow(UserNotFoundException::new);
-        return UserDto.builder().name(user.getName()).id(user.getId()).email(user.getEmail()).build();
+        return UserDto.builder()
+                .name(user.getName())
+                .id(user.getId())
+                .email(user.getEmail())
+                .role(user.getRole())
+                .build();
     }
 
     public void registerUser(UserRegistrationDto userRegistrationDto) {
@@ -49,5 +69,16 @@ public class UserService {
         user.setName(updateUserInfoRequest.getName());
         user.setEmail(updateUserInfoRequest.getEmail());
         userRepository.save(user);
+    }
+
+    public void UpdateUserRole(int id,UpdateUserRoleRequest updateUserRoleRequest) {
+        User user = userRepository.findById(id).orElseThrow(UserNotFoundException::new);
+        user.setRole(updateUserRoleRequest.getRole());
+        userRepository.save(user);
+    }
+
+    public void deleteUser(int id) {
+
+
     }
 }

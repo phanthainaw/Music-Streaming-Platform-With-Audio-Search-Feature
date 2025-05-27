@@ -1,8 +1,6 @@
 package org.hust.musicstreamingplatform.dto.track;
 
 import lombok.*;
-import org.hust.musicstreamingplatform.model.Genre;
-import org.hust.musicstreamingplatform.model.enums.GenreEnum;
 
 import java.util.List;
 
@@ -16,7 +14,7 @@ public class TrackDto {
     private String title;
     private Float duration;
     private String coverUrl;
-    private GenreEnum genre;
+    private String genre;
     private List<String> artistsName;
     private List<Integer> artistsId;
     private String albumName;

@@ -2,8 +2,6 @@ package org.hust.musicstreamingplatform.dto.album;
 
 import lombok.Builder;
 import lombok.Data;
-import org.hust.musicstreamingplatform.model.Genre;
-import org.hust.musicstreamingplatform.model.enums.GenreEnum;
 
 import java.util.Date;
 
@@ -14,5 +12,5 @@ public class AlbumDto {
     String title;
     String coverUrl;
     Date releaseDate;
-    GenreEnum genre;
+    String genre;
 }
