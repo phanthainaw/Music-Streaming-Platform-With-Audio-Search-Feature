@@ -5,11 +5,13 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class UploadTrackRequest {
+public class UpdateTrackRequest {
     private String title;
-    private Float duration;
     private List<Integer> artistIds;
     private int albumId;
     private int genreId;
     private String coverUrl;
+    private int publisherId;
 }
+
+

@@ -1,13 +1,19 @@
 package org.hust.musicstreamingplatform.model;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.Flow;
 
 @Entity
 @Data
+@NoArgsConstructor(access = AccessLevel.PROTECTED) // Ensure JPA compliance
+@AllArgsConstructor
+@Builder
+
+
 public class Track {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -16,7 +22,6 @@ public class Track {
     private String title;
     private Float duration;
     private Date releaseDate;
-    private String cdnUrl ;
     private String coverUrl;
 
     @ManyToOne
@@ -26,6 +31,10 @@ public class Track {
     @ManyToOne
     @JoinColumn(name = "genre_id")
     private Genre genre;
+
+    @ManyToOne
+    @JoinColumn(name = "publisher_id")
+    private User publisher;
 
     @ManyToMany
     @JoinTable(

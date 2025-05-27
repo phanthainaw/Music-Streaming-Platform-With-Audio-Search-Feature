@@ -36,7 +36,6 @@ public class UserService {
                 .toList();
     }
 
-
     public UserDto getUserById(int id) {
         User user = userRepository.findById(id).orElseThrow(UserNotFoundException::new);
         return UserDto.builder()
@@ -49,11 +48,9 @@ public class UserService {
 
     public void registerUser(UserRegistrationDto userRegistrationDto) {
         Optional<User> user = userRepository.findByUsername(userRegistrationDto.getUsername());
-
         if (user.isPresent()) {
             throw new UsernameExisted("Username already existed");
         }
-
         User newUser = new User();
         newUser.setName(userRegistrationDto.getName());
         newUser.setEmail(userRegistrationDto.getEmail());
