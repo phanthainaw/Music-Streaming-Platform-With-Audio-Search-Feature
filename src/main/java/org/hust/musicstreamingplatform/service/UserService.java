@@ -1,5 +1,7 @@
 package org.hust.musicstreamingplatform.service;
 
+import jakarta.transaction.Transactional;
+import org.hust.musicstreamingplatform.dto.user.UpdateUserInfoRequest;
 import org.hust.musicstreamingplatform.dto.user.UserDto;
 import org.hust.musicstreamingplatform.dto.user.UserRegistrationDto;
 import org.hust.musicstreamingplatform.exception.UserNotFoundException;
@@ -39,5 +41,13 @@ public class UserService {
         newUser.setRole(userRegistrationDto.getRole());
         newUser.setPasswordHash(passwordEncoder.encode(userRegistrationDto.getPassword()));
         userRepository.save(newUser);
+    }
+
+    @Transactional
+    public void updateUserInfo(int id, UpdateUserInfoRequest updateUserInfoRequest) {
+        User user = userRepository.findById(id).orElseThrow(UserNotFoundException::new);
+        user.setName(updateUserInfoRequest.getName());
+        user.setEmail(updateUserInfoRequest.getEmail());
+        userRepository.save(user);
     }
 }

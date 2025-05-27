@@ -36,7 +36,7 @@ public class AuthenticationService {
     }
 
     public void register(RegisterRequest registerRequest) {
-        UserRegistrationDto userRegistrationDto = UserRegistrationDto.builder().username(registerRequest.getUsername()).password(registerRequest.getPassword()).name(registerRequest.getName()).role(Role.USER).build();
+        UserRegistrationDto userRegistrationDto = UserRegistrationDto.builder().username(registerRequest.getUsername()).password(registerRequest.getPassword()).name(registerRequest.getName()).role(Role.LISTENER).build();
         userService.registerUser(userRegistrationDto);
     }
 }

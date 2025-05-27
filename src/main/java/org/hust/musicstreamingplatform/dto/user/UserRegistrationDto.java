@@ -13,6 +13,6 @@ public class UserRegistrationDto {
     private String password;
     private String email;
     private String name;
-    private Role role = Role.USER;
+    private Role role = Role.LISTENER;
 
 }

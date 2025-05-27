@@ -1,7 +1,6 @@
 package org.hust.musicstreamingplatform.service;
 
 import lombok.RequiredArgsConstructor;
-import org.hust.musicstreamingplatform.dto.search.SearchTracksResponse;
 import org.hust.musicstreamingplatform.dto.track.TrackDto;
 import org.hust.musicstreamingplatform.model.Artist;
 import org.hust.musicstreamingplatform.model.Track;
@@ -10,19 +9,15 @@ import org.hust.musicstreamingplatform.repository.TrackRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
 public class TrackService {
 
     private final TrackRepository trackRepository;
-    private final AlbumRepository albumRepository;
 
-    public List<TrackDto> searchTracksByTitle(String query) {
-        List<Track> matchingTracks = trackRepository.searchTracksByTitle(query);
+    public List<TrackDto> searchByTitle(String title) {
+        List<Track> matchingTracks = trackRepository.searchByTitle(title);
         return matchingTracks.stream().map(track -> {
             String albumName = track.getAlbum().getTitle();
             int albumId = track.getAlbum().getId();
@@ -35,8 +30,11 @@ public class TrackService {
                     .albumName(albumName)
                     .artistsId(artistId)
                     .artistsName(artistName)
+                    .genre(track.getGenre().getTitle())
+                    .coverUrl(track.getCoverUrl())
                     .build();
         }).toList();
     }
+
 }
 

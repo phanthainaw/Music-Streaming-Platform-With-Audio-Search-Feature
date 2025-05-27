@@ -1,6 +1,7 @@
 package org.hust.musicstreamingplatform.model.enums;
 
 public enum Role {
-    USER,
+    LISTENER,
+    PUBLISHER,
     ADMIN
 }
