@@ -19,6 +19,8 @@ public class Album {
 
     private Date releaseDate;
 
+
+
     @ManyToOne
     @JoinColumn(name = "genre_id")
     private Genre genre;
@@ -26,6 +28,9 @@ public class Album {
     @ManyToOne
     @JoinColumn(name = "owner_id")
     private User owner;
+
+    @OneToMany(mappedBy = "album")
+    private List<Track> tracks;
 
     @ManyToMany
     @JoinTable(

@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Data;
 import org.apache.catalina.Manager;
 
+import java.util.List;
+
 @Entity
 @Data
 public class Artist {
@@ -19,5 +21,8 @@ public class Artist {
     @ManyToOne
     @JoinColumn(name="manager_id")
     private User manager;
+
+    @ManyToMany(mappedBy = "artists")
+    private List<Track> tracks;
 
 }

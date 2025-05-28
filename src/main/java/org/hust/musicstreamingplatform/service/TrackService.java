@@ -29,39 +29,15 @@ public class TrackService {
     private final ArtistRepository artistRepository;
 
     public List<TrackDto> searchByTitle(String title) {
-        List<Track> matchingTracks = trackRepository.searchByTitle(title);
-        return matchingTracks.stream().map(track -> {
-            String albumName = track.getAlbum().getTitle();
-            int albumId = track.getAlbum().getId();
-            List<String> artistName = track.getArtists().stream().map(Artist::getName).toList();
-            List<Integer> artistId = track.getArtists().stream().map(Artist::getId).toList();
-            return TrackDto.builder().id(track.getId())
-                    .title(track.getTitle())
-                    .duration(track.getDuration())
-                    .albumId(albumId)
-                    .albumName(albumName)
-                    .artistsId(artistId)
-                    .artistsName(artistName)
-                    .genre(track.getGenre().getTitle())
-                    .coverUrl(track.getCoverUrl())
-                    .build();
-        }).toList();
+        List<Track> tracks = trackRepository.searchByTitle(title);
+        return tracks.stream().map(TrackService::getTrackDto).toList();
     }
 
     public void uploadTrack(User publisher, UploadTrackRequest uploadTrackRequest) {
         Genre genre = genreRepository.findById(uploadTrackRequest.getGenreId()).orElseThrow(GenreNotFoundException::new);
         Album album = albumRepository.findById(uploadTrackRequest.getAlbumId()).orElseThrow(AlbumNotFoundException::new);
         List<Artist> artists = uploadTrackRequest.getArtistIds().stream().map(artist -> artistRepository.findById(artist).orElseThrow(ArtistNotFoundException::new)).toList();
-        Track track = Track.builder()
-                .title(uploadTrackRequest.getTitle())
-                .duration(uploadTrackRequest.getDuration())
-                .genre(genre)
-                .album(album)
-                .artists(artists)
-                .coverUrl(uploadTrackRequest.getCoverUrl())
-                .publisher(publisher)
-                .releaseDate(new Date())
-                .build();
+        Track track = Track.builder().title(uploadTrackRequest.getTitle()).duration(uploadTrackRequest.getDuration()).genre(genre).album(album).artists(artists).coverUrl(uploadTrackRequest.getCoverUrl()).publisher(publisher).releaseDate(new Date()).build();
         trackRepository.save(track);
     }
 
@@ -82,7 +58,38 @@ public class TrackService {
     public void deleteTrack(int id) {
         Track track = trackRepository.findById(id).orElseThrow(ArtistNotFoundException::new);
         trackRepository.delete(track);
-
     }
+
+    public List<TrackDto> getTracksByArtist(int artistId) {
+        List<Track> tracks = trackRepository.findByArtistsId(artistId);
+        return tracks.stream().map(TrackService::getTrackDto).toList();
+    }
+
+    public List<TrackDto> getTracksByAlbum(int artistId) {
+        List<Track> tracks = trackRepository.findByAlbumId(artistId);
+        return tracks.stream().map(TrackService::getTrackDto).toList();
+    }
+
+    public TrackDto getTrack (int trackId) {
+        Track track = trackRepository.findById(trackId).orElseThrow(TrackNotFoundException::new);
+        return getTrackDto(track);
+    }
+
+    private static TrackDto getTrackDto(Track track) {
+            String albumName = track.getAlbum().getTitle();
+            int albumId = track.getAlbum().getId();
+            List<String> artistName = track.getArtists().stream().map(Artist::getName).toList();
+            List<Integer> artistIds = track.getArtists().stream().map(Artist::getId).toList();
+            return TrackDto.builder()
+                    .id(track.getId())
+                    .title(track.getTitle())
+                    .duration(track.getDuration())
+                    .albumId(albumId)
+                    .albumName(albumName)
+                    .artistsId(artistIds)
+                    .artistsName(artistName)
+                    .genre(track.getGenre().getTitle())
+                    .coverUrl(track.getCoverUrl())
+                    .build();}
 }
 

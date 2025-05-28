@@ -1,9 +1,5 @@
 package org.hust.musicstreamingplatform.controller;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
 import org.hust.musicstreamingplatform.dto.track.TrackDto;
 import org.hust.musicstreamingplatform.dto.track.UpdateTrackRequest;
 import org.hust.musicstreamingplatform.dto.track.UploadTrackRequest;
@@ -16,6 +12,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.List;
 
 import static org.hust.musicstreamingplatform.utils.Utils.getUserFromPrincipal;
 
@@ -43,12 +40,29 @@ public class TrackController {
         return ResponseEntity.ok().build();
     }
 
-//    @DeleteMapping("/{id}")
-//    @PreAuthorize("hasAnyAuthority('PUBLISHER','ADMIN')")
-//    public ResponseEntity<Void> deleteTrack(Principal principal, @PathVariable int id) {
-//        if(getUserFromPrincipal(principal).getRole()== Role.PUBLISHER && getUserFromPrincipal(principal).getId()!=id) return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-//        trackService.deleteTrack(id);
-//
-//    }
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('PUBLISHER','ADMIN')")
+    public ResponseEntity<Void> deleteTrack(Principal principal, @PathVariable int id) {
+        if(getUserFromPrincipal(principal).getRole()== Role.PUBLISHER && getUserFromPrincipal(principal).getId()!=id) return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        trackService.deleteTrack(id);
+        return ResponseEntity.ok().build();
+    }
 
+    @GetMapping("/artist/{id}")
+    public ResponseEntity<List<TrackDto>> getTracksByArtist(@PathVariable int id) {
+        List<TrackDto> trackDtos =  trackService.getTracksByArtist(id);
+        return ResponseEntity.ok(trackDtos);
+    }
+
+    @GetMapping("/album/{id}")
+    public ResponseEntity<List<TrackDto>> getTracksByAlbum(@PathVariable int id) {
+        List<TrackDto> trackDtos =  trackService.getTracksByAlbum(id);
+        return ResponseEntity.ok(trackDtos);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<TrackDto> getTrack(@PathVariable int id) {
+        TrackDto getTrack = trackService.getTrack(id);
+        return ResponseEntity.ok(getTrack);
+    }
 }
