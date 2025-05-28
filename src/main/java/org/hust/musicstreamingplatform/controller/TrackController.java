@@ -3,6 +3,7 @@ package org.hust.musicstreamingplatform.controller;
 import org.hust.musicstreamingplatform.dto.track.TrackDto;
 import org.hust.musicstreamingplatform.dto.track.UpdateTrackRequest;
 import org.hust.musicstreamingplatform.dto.track.UploadTrackRequest;
+import org.hust.musicstreamingplatform.model.Track;
 import org.hust.musicstreamingplatform.model.enums.Role;
 import org.hust.musicstreamingplatform.service.TrackService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,11 +25,18 @@ public class TrackController {
     @Autowired
     private TrackService trackService;
 
+    @GetMapping("")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<TrackDto>> getAllTracks() {
+        List<TrackDto> tracks = trackService.getAllTracks();
+        return ResponseEntity.status(HttpStatus.OK).body(tracks);
+    }
+
     @PostMapping("")
     @PreAuthorize("hasAnyAuthority('PUBLISHER', 'ADMIN')")
     public ResponseEntity<Void> uploadTrack(Principal principal, @RequestBody UploadTrackRequest uploadTrackRequest) {
         trackService.uploadTrack(getUserFromPrincipal(principal), uploadTrackRequest);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @PutMapping("/{id}")

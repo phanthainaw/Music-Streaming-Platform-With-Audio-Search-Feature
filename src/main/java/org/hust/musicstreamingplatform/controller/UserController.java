@@ -6,6 +6,8 @@ import org.hust.musicstreamingplatform.dto.user.UserDto;
 import org.hust.musicstreamingplatform.dto.user.UserRegistrationDto;
 import org.hust.musicstreamingplatform.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -43,8 +45,7 @@ public class UserController {
     @PostMapping("/create")
     public ResponseEntity<String> createUser(@RequestBody UserRegistrationDto userRegistrationDto ) {
         userService.registerUser(userRegistrationDto);
-        return ResponseEntity.ok("User registered successfully");
-
+        return ResponseEntity.status(HttpStatus.CREATED).body("User registered successfully");
     }
 
     @PreAuthorize("hasAnyAuthority('LISTENER','ADMIN', 'PUBLISHER')")

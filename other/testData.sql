@@ -3,12 +3,13 @@
 
 -- Users
 INSERT INTO public.user_ (email, name, password_hash, role, username)
-VALUES ('admin@example.com', 'Admin User', 'hashed_pw1', 0, 'admin'),
+VALUES ('admin@example.com', 'Admin User', 'hashed_pw1', 2, 'admin'),
        ('manager1@example.com', 'Manager One', 'hashed_pw2', 1, 'manager1'),
        ('manager2@example.com', 'Manager Two', 'hashed_pw3', 1, 'manager2'),
-       ('listener1@example.com', 'Listener One', 'hashed_pw4', 2, 'listener1'),
-       ('listener2@example.com', 'Listener Two', 'hashed_pw5', 2, 'listener2'),
-       ('listener3@example.com', 'Listener Three', 'hashed_pw6', 2, 'listener3');
+       ('listener1@example.com', 'Listener One', 'hashed_pw4', 0, 'listener1'),
+       ('listener2@example.com', 'Listener Two', 'hashed_pw5', 0, 'listener2'),
+       ('listener3@example.com', 'Listener Three', 'hashed_pw6', 0, 'listener3'),
+       ('nam.pt207622@sis.hust.edu.vn', 'Phan Thái Nam', '$2a$10$mvedy.vSezeRRz9j8Zjad..myGVf1qCAMfK2hdkUGTiFXZiajwd9G', 2, 'phanthainam2002');
 
 -- Genres
 INSERT INTO public.genre (title)

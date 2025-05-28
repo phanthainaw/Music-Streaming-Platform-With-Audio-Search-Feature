@@ -91,5 +91,12 @@ public class TrackService {
                     .genre(track.getGenre().getTitle())
                     .coverUrl(track.getCoverUrl())
                     .build();}
+
+    public List<TrackDto> getAllTracks() {
+        List<Track> tracks = trackRepository.findAll();
+        return tracks.stream().map(TrackService::getTrackDto).toList();
+    }
+
+    public void deleteTracksOfArtist(int genreId) {}
 }
 
