@@ -19,8 +19,6 @@ public class Album {
 
     private Date releaseDate;
 
-
-
     @ManyToOne
     @JoinColumn(name = "genre_id")
     private Genre genre;
@@ -38,7 +36,7 @@ public class Album {
             joinColumns = @JoinColumn(name = "album_id"),
             inverseJoinColumns = @JoinColumn(name = "artist_id")
     )
-    private List<Artist> artist;
+    private List<Artist> artists;
 
 
 }

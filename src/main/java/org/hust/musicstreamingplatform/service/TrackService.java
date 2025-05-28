@@ -1,11 +1,15 @@
 package org.hust.musicstreamingplatform.service;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.hust.musicstreamingplatform.dto.track.TrackDto;
 import org.hust.musicstreamingplatform.dto.track.UpdateTrackRequest;
 import org.hust.musicstreamingplatform.dto.track.UploadTrackRequest;
 import org.hust.musicstreamingplatform.exception.album.AlbumNotFoundException;
 import org.hust.musicstreamingplatform.exception.artist.ArtistNotFoundException;
+import org.hust.musicstreamingplatform.exception.track.NoArtistTrackException;
 import org.hust.musicstreamingplatform.exception.genre.GenreNotFoundException;
 import org.hust.musicstreamingplatform.exception.track.TrackNotFoundException;
 import org.hust.musicstreamingplatform.model.*;
@@ -15,9 +19,10 @@ import org.hust.musicstreamingplatform.repository.GenreRepository;
 import org.hust.musicstreamingplatform.repository.TrackRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.Flow;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -27,6 +32,9 @@ public class TrackService {
     private final AlbumRepository albumRepository;
     private final GenreRepository genreRepository;
     private final ArtistRepository artistRepository;
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     public List<TrackDto> searchByTitle(String title) {
         List<Track> tracks = trackRepository.searchByTitle(title);
@@ -97,6 +105,25 @@ public class TrackService {
         return tracks.stream().map(TrackService::getTrackDto).toList();
     }
 
-    public void deleteTracksOfArtist(int genreId) {}
+    @Transactional
+    public void removeArtistFromTracks(int artistId) {
+        List<Track> tracks = trackRepository.findByArtistsId(artistId);
+
+        // Identify tracks where the artist is the only one
+        List<Track> soloTracks = tracks.stream()
+                .filter(track -> track.getArtists().size() == 1)
+                .toList();
+
+        if (!soloTracks.isEmpty()) {
+            // Throw an exception with the IDs of the problematic tracks
+            throw new NoArtistTrackException(soloTracks.stream()
+                    .map(TrackService::getTrackDto).toList());
+        }
+
+        // Proceed to remove artist from all other tracks
+        trackRepository.removeArtistFromTracks(artistId);
+        tracks.forEach(track -> entityManager.refresh(track));
+    }
+
 }
 

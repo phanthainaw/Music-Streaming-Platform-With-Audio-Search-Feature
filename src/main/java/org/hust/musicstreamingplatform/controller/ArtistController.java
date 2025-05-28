@@ -2,7 +2,11 @@ package org.hust.musicstreamingplatform.controller;
 
 import org.hust.musicstreamingplatform.dto.artist.ArtistDto;
 import org.hust.musicstreamingplatform.dto.artist.CreateArtistRequest;
+import org.hust.musicstreamingplatform.dto.artist.DeleteArtistResponse;
+import org.hust.musicstreamingplatform.dto.track.TrackDto;
+import org.hust.musicstreamingplatform.exception.NoArtistEntityException;
 import org.hust.musicstreamingplatform.exception.UnauthorizedUpdaterException;
+import org.hust.musicstreamingplatform.exception.track.NoArtistTrackException;
 import org.hust.musicstreamingplatform.model.User;
 import org.hust.musicstreamingplatform.service.ArtistService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,9 +62,16 @@ public class ArtistController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'PUBLISHER')")
-    public ResponseEntity<Void> deleteArtist(Principal principal,@PathVariable("id") int id) {
+    public ResponseEntity<DeleteArtistResponse> deleteArtist(Principal principal, @PathVariable("id") int id) {
         User requester = getUserFromPrincipal(principal);
-        artistService.deleteArtist(id, requester);
+        try {
+            artistService.deleteArtist(id, requester);
+        } catch (NoArtistEntityException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(DeleteArtistResponse.builder()
+                    .toDeleteTracks(e.getNoArtistTracks())
+                    .toDeleteAlbums(e.getNoArtistAlbums())
+                    .build());
+        }
         return ResponseEntity.ok().build();
     }
 }

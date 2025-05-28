@@ -1,10 +1,16 @@
 package org.hust.musicstreamingplatform.service;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.transaction.Transactional;
 import org.hust.musicstreamingplatform.dto.artist.ArtistDto;
 import org.hust.musicstreamingplatform.dto.artist.CreateArtistRequest;
 import org.hust.musicstreamingplatform.dto.track.TrackDto;
+import org.hust.musicstreamingplatform.exception.NoArtistEntityException;
 import org.hust.musicstreamingplatform.exception.UnauthorizedUpdaterException;
+import org.hust.musicstreamingplatform.exception.album.NoArtistAlbumException;
 import org.hust.musicstreamingplatform.exception.artist.ArtistNotFoundException;
+import org.hust.musicstreamingplatform.exception.track.NoArtistTrackException;
 import org.hust.musicstreamingplatform.model.Artist;
 import org.hust.musicstreamingplatform.model.User;
 import org.hust.musicstreamingplatform.model.enums.Role;
@@ -20,7 +26,13 @@ public class ArtistService {
 
     @Autowired
     private ArtistRepository artistRepository;
+    @Autowired
     private TrackService trackService;
+    @Autowired
+    private AlbumService albumService;
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     public List<ArtistDto> getAllArtists() {
         List<Artist> artists = artistRepository.findAll();
@@ -77,17 +89,33 @@ public class ArtistService {
         artistRepository.save(targetArtist);
     }
 
+    @Transactional
     public void deleteArtist(int id, User requester) {
         Artist targetArtist = artistRepository.findById(id).orElseThrow(ArtistNotFoundException::new);
-        List<TrackDto> tracksIncludeTargetArtist = trackService.getTracksByArtist(id) ;
-
-        for(TrackDto trackDto : tracksIncludeTargetArtist) {
-
+        if(requester.getId() != targetArtist.getManager().getId()&&requester.getRole() != Role.ADMIN) {
+            throw new UnauthorizedUpdaterException();
+        }
+        NoArtistTrackException noArtistTrackException = null;
+        NoArtistAlbumException noArtistAlbumException = null;
+        boolean exceptionFlg = false;
+        try {
+            trackService.removeArtistFromTracks(id);
+        } catch (NoArtistTrackException e) {
+           noArtistTrackException = e;
+           exceptionFlg = true;
         }
 
-
-        if(requester.getId() != targetArtist.getManager().getId()&requester.getRole() != Role.ADMIN) {
-            throw new UnauthorizedUpdaterException();
+        try {
+            albumService.removeArtistFromAlbum(id);
+        } catch (NoArtistAlbumException e) {
+            noArtistAlbumException = e;
+            exceptionFlg = true;
+        }
+        if (exceptionFlg) {
+            NoArtistEntityException exception = new NoArtistEntityException();
+            if(noArtistAlbumException!=null)exception.setNoArtistAlbums(noArtistAlbumException.NoArtistAlbums);
+            if(noArtistTrackException!=null) exception.setNoArtistTracks(noArtistTrackException.NoArtistTracks);
+            throw exception;
         }
         artistRepository.delete(targetArtist);
     }
