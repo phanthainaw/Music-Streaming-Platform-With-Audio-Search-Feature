@@ -3,12 +3,11 @@ package org.hust.musicstreamingplatform.controller;
 import org.hust.musicstreamingplatform.dto.artist.ArtistDto;
 import org.hust.musicstreamingplatform.dto.artist.CreateArtistRequest;
 import org.hust.musicstreamingplatform.dto.artist.DeleteArtistResponse;
-import org.hust.musicstreamingplatform.dto.track.TrackDto;
 import org.hust.musicstreamingplatform.exception.NoArtistEntityException;
 import org.hust.musicstreamingplatform.exception.UnauthorizedUpdaterException;
-import org.hust.musicstreamingplatform.exception.track.NoArtistTrackException;
 import org.hust.musicstreamingplatform.model.User;
 import org.hust.musicstreamingplatform.service.ArtistService;
+import org.hust.musicstreamingplatform.service.PlaylistService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +25,8 @@ public class ArtistController {
 
     @Autowired
     private ArtistService artistService;
+    @Autowired
+    private PlaylistService playlistService;
 
 
     @GetMapping("")
@@ -74,4 +75,5 @@ public class ArtistController {
         }
         return ResponseEntity.ok().build();
     }
+
 }
