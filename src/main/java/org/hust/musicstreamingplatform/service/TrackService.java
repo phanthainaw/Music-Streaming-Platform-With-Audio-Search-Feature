@@ -19,9 +19,7 @@ import org.hust.musicstreamingplatform.repository.GenreRepository;
 import org.hust.musicstreamingplatform.repository.TrackRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -44,7 +42,7 @@ public class TrackService {
     public void uploadTrack(User publisher, UploadTrackRequest uploadTrackRequest) {
         Genre genre = genreRepository.findById(uploadTrackRequest.getGenreId()).orElseThrow(GenreNotFoundException::new);
         Album album = albumRepository.findById(uploadTrackRequest.getAlbumId()).orElseThrow(AlbumNotFoundException::new);
-        List<Artist> artists = uploadTrackRequest.getArtistIds().stream().map(artist -> artistRepository.findById(artist).orElseThrow(ArtistNotFoundException::new)).toList();
+        Set<Artist> artists = uploadTrackRequest.getArtistIds().stream().map(artist -> artistRepository.findById(artist).orElseThrow(ArtistNotFoundException::new)).collect(Collectors.toCollection(HashSet::new));
         Track track = Track.builder().title(uploadTrackRequest.getTitle()).duration(uploadTrackRequest.getDuration()).genre(genre).album(album).artists(artists).coverUrl(uploadTrackRequest.getCoverUrl()).publisher(publisher).releaseDate(new Date()).build();
         trackRepository.save(track);
     }
@@ -53,8 +51,7 @@ public class TrackService {
         Track track = trackRepository.findById(id).orElseThrow(TrackNotFoundException::new);
         Genre genre = genreRepository.findById(updateTrackRequest.getGenreId()).orElseThrow(GenreNotFoundException::new);
         Album album = albumRepository.findById(updateTrackRequest.getAlbumId()).orElseThrow(AlbumNotFoundException::new);
-        List<Artist> artists = updateTrackRequest.getArtistIds().stream().map(artist -> artistRepository.findById(artist).orElseThrow(ArtistNotFoundException::new)).toList();
-
+        Set<Artist> artists = updateTrackRequest.getArtistIds().stream().map(artist -> artistRepository.findById(artist).orElseThrow(ArtistNotFoundException::new)).collect(Collectors.toCollection(HashSet::new));
         track.setTitle(updateTrackRequest.getTitle());
         track.setArtists(artists);
         track.setAlbum(album);
@@ -83,7 +80,7 @@ public class TrackService {
         return getTrackDto(track);
     }
 
-    private static TrackDto getTrackDto(Track track) {
+    public static TrackDto getTrackDto(Track track) {
             String albumName = track.getAlbum().getTitle();
             int albumId = track.getAlbum().getId();
             List<String> artistName = track.getArtists().stream().map(Artist::getName).toList();

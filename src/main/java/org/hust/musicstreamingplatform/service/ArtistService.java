@@ -31,9 +31,6 @@ public class ArtistService {
     @Autowired
     private AlbumService albumService;
 
-    @PersistenceContext
-    private EntityManager entityManager;
-
     public List<ArtistDto> getAllArtists() {
         List<Artist> artists = artistRepository.findAll();
         return artists.stream().map(ArtistService::getArtistDto).toList();

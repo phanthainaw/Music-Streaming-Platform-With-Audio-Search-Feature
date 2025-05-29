@@ -5,6 +5,7 @@ import lombok.Data;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 
 @Entity
@@ -27,16 +28,17 @@ public class Album {
     @JoinColumn(name = "owner_id")
     private User owner;
 
-    @OneToMany(mappedBy = "album")
-    private List<Track> tracks;
+    @OneToMany(mappedBy = "album", cascade = CascadeType.PERSIST)
+    private Set<Track> tracks;
 
-    @ManyToMany
+    @ManyToMany(cascade = CascadeType.PERSIST)
     @JoinTable(
             name="album_artist",
             joinColumns = @JoinColumn(name = "album_id"),
             inverseJoinColumns = @JoinColumn(name = "artist_id")
     )
-    private List<Artist> artists;
+
+    private Set<Artist> artists;
 
 
 }

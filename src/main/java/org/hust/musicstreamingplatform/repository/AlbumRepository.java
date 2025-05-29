@@ -29,4 +29,5 @@ public interface AlbumRepository extends JpaRepository<Album, Integer> {
     void removeArtistFromAlbums(@Param("artistId") int artistId);
 
 
+
 }

@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import org.apache.catalina.Manager;
 
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Data
@@ -30,5 +31,20 @@ public class Artist {
 
     @ManyToMany(mappedBy = "artists")
     private List<Track> tracks;
+
+    @ManyToMany(mappedBy = "artists")
+    private List<Album> albums;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Artist artist)) return false;
+        return id == artist.id;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
 
 }
