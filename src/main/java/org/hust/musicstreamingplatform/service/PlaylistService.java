@@ -97,7 +97,6 @@ public class PlaylistService {
         playlistRepository.delete(playlist);
     }
 
-
     public void addPlaylist(User user, AddPlaylistRequest addPlaylistRequest) {
         List<Track> tracks = addPlaylistRequest.getTracksId().stream().map(
                         track -> trackRepository.findById(track)
