@@ -17,12 +17,12 @@ function generateFingerprints(peaks, songId) {
             address |= (point.time - anchor.time) & 0x3fff; // Mask the time difference to the lower 14 bits
 
             // Check if the address already exists in the map, if not, initialize it
-            if (!fingerprints.has(address)) {
-                fingerprints.set(address, []);
+            if (fingerprints[address]===undefined) {
+                fingerprints[address] = [];
             }
 
             // Add the Couple object to the list corresponding to the address
-            fingerprints.get(address).push(new Couple(anchor.time, songId));
+            fingerprints[address].push(new Couple(anchor.time, songId));
         }
     }
 

@@ -1,17 +1,18 @@
 const mongoose = require("mongoose");
 const { Schema, model } = mongoose;
+const { Couple } = require("../model/Couple");
 
 // Define the Couple schema
 const coupleSchema = new Schema({
   SongId: Number,
   Timestamp: Number,
-}, {_id : false});
+}, { _id: false });
 
-const Couple = model("Couple", coupleSchema);
+// const Couple = model("Couple", coupleSchema);
 
 const fingerprintSchema = new Schema({
-    _id: Number,
-    Couples: [coupleSchema]
+  _id: Number,
+  Couples: [coupleSchema]
 }, { versionKey: false })
 
 const Fingerprint = model("Fingerprint", fingerprintSchema);
@@ -37,11 +38,11 @@ class Mongo {
 
   // Insert fingerprints into MongoDB
   async insertFingerprints(fingerprints) {
-    for (const [hash, couples] of fingerprints.entries()) {
-        const coupleDocs = couples.map(couple => ({
+    for (const hash of Object.keys(fingerprints)) {
+      const coupleDocs = fingerprints[hash].map(couple => ({
         SongId: couple.songId,
         Timestamp: couple.time
-      })); 
+      }));
       const result = await Fingerprint.updateOne(
         { _id: parseInt(hash) },
         {
@@ -57,22 +58,16 @@ class Mongo {
 
   // Get matching couples from MongoDB
   async getMatchingCouples(hashes) {
-    const collection = mongoose.connection.collection(this.collectionName);
     const matchedCouples = {};
-
     for (const hash of hashes) {
-      const matchDoc = await collection.findOne({ _id: hash });
+      const matchDoc = await Fingerprint.findOne({ _id: hash });
       if (matchDoc) {
         const couplesForAHash = matchDoc.Couples.map((coupleDoc) => {
-          return new Couple({
-            SongId: coupleDoc.SongId,
-            Timestamp: coupleDoc.Timestamp,
-          });
+          return new Couple(coupleDoc.Timestamp, coupleDoc.SongId);
         });
         matchedCouples[hash] = couplesForAHash;
       }
     }
-
     return matchedCouples;
   }
 

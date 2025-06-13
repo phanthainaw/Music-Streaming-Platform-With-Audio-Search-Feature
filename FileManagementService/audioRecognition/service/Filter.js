@@ -41,7 +41,7 @@ function getMagnitudeSpectrum(spectra) {
   return magnitudeSpectrum;
 }
 
-function SincFilter(inputSignal, cutOffFrequency, sampleRate) {
+function sincFilter(inputSignal, cutOffFrequency, sampleRate) {
 
   const originalSignalLength = inputSignal.length;
   const nearestPowerOf2SignalLength = Math.pow(2, Math.ceil(Math.log(inputSignal.length) / Math.log(2)));
@@ -82,6 +82,6 @@ function copyAndResize(arr, newLength, fillValue = 0) {
 }
 
 module.exports = {
-  SincFilter,
+  sincFilter,
   getMagnitudeSpectrum
 };
